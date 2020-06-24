@@ -1,0 +1,122 @@
+#!/bin/bash
+
+##
+## EPITECH PROJECT, 2019
+## SYN_automakefile_2019
+## File description:
+## automakefile
+##
+
+header_epitech()
+{
+    printf "##\n" >> $dest_dir/Makefile
+    printf "## EPITECH PROJECT, 2019\n" >> $dest_dir/Makefile
+    printf "## SYN_automakefile_2019\n" >> $dest_dir/Makefile
+    printf "## file description:\n" >> $dest_dir/Makefile
+    printf "## Makefile\n" >> $dest_dir/Makefile
+    printf "##\n\n" >> $dest_dir/Makefile
+}
+
+version_manager()
+{
+    printf "archive:\n\t\t$compression_binary $compression_flags ./$backup_folder/backup_$version.$compression_binary \$(SRC)\n \\n" >> $dest_dir/Makefile
+	printf "revert:\n\t\t$decompression_binary $decompression_flags ./$backup_folder/backup_$version.$compression_binary\n\n" >> $dest_dir/Makefile
+	printf "num:\n\t@echo \"$version\"\n\n" >> $dest_dir/Makefile
+	printf "delete:\n\t\t\$(RM) ./$backup_folder/backup_$version.$compression_binary" >> $dest_dir/Makefile
+}
+
+parser()
+{
+    while read lign
+        do
+            config=($lign)
+        if [[ ${config[0]} == "PROJECT_DIR" ]]
+        then
+            dest_dir=${config[1]}
+        elif [[ ${config[0]} == "SOURCES_DIR" ]]
+        then
+            sources_directory=${config[1]}
+        elif [[ ${config[0]} == "HEADERS_DIR" ]]
+        then
+            headers_directory=${config[1]}
+        elif [[ ${config[0]} == "LIBS_DIR" ]]
+        then
+            library_directory=${config[1]}
+        elif [[ ${config[0]} == "EXEC" ]]
+        then
+            binary_name=${config[1]}
+        elif [[ ${config[0]} == "CC" ]]
+        then
+            compilation=${config[1]}
+        elif [[ ${config[0]} == "CFLAGS" ]]
+        then
+            compilation_flags=${config[1]}
+        elif [[ ${config[0]} == "LDFLAGS" ]]
+        then
+            linking_flags=${config[1]}
+        elif [[ ${config[0]} == "BCK_DIR" ]]
+        then
+            backup_folder=${config[1]}
+        elif [[ ${config[0]} == "ZIP" ]]
+        then
+            compression_binary=${config[1]}
+        elif [[ ${config[0]} == "ZIPFLAGS" ]]
+        then
+            compression_flags=${config[1]}
+        elif [[ ${config[0]} == "UNZIP" ]]
+        then
+            decompression_binary=${config[1]}
+        elif [[ ${config[0]} == "UNZIPFLAGS" ]]
+        then
+            decompression_flags=${config[1]}
+        elif [[ ${config[0]} == *.c ]]
+        then
+            file_sources[size]=${config[0]}
+            ((size++))
+        fi
+    done < $file_of_config
+}
+
+file_of_config=$1
+if [[ ! -e $file_of_config ]]
+  then
+    exit 84
+fi
+    size=0
+    IFS=";"
+    parser
+    if [ -z $dest_dir ]
+	then
+		exit 84
+	fi
+    if [ ! -d "$dest_dir/$backup_folder" ]
+	then
+        mkdir -p $dest_dir/$backup_folder
+    fi
+    printf 1_0 > $dest_dir/.version
+    header_epitech
+    i=0
+    printf "SRC= " >> $dest_dir/Makefile
+    for ((i = 0; $i != size ; i++))
+        do
+            printf "\t$sources_directory/${file_sources[$i]} \\" >> $dest_dir/Makefile
+            printf "\n\t" >> $dest_dir/Makefile
+    done
+    printf "\nCC=\t$compilation\n\n" >> $dest_dir/Makefile
+    printf "OBJ=\t\$(SRC:.c=.o)\n\n" >> $dest_dir/Makefile
+    printf "NAME=\t$binary_name\n\n" >> $dest_dir/Makefile
+    printf "CFLAGS=\t$compilation_flags\n\n" >> $dest_dir/Makefile
+    printf "LDFLAGS= $linking_flags\n\n" >> $dest_dir/Makefile
+    printf "RM=\trm -f\n\n" >> $dest_dir/Makefile
+    printf "all:\t\$(NAME)\n\n" >> $dest_dir/Makefile
+    printf "\$(NAME):\t\$(OBJ)\n" >> $dest_dir/Makefile
+    printf "\t\t\$(CC) \$(CFLAGS) \$(OBJ) -o \$(NAME)\n\n" >> $dest_dir/Makefile
+    printf "clean:\n" >> $dest_dir/Makefile
+    printf "\t\t\$(RM) \$(OBJ) *.gcno\n\n" >> $dest_dir/Makefile
+    printf "" >> $dest_dir/Makefile
+    printf "fclean:\tclean\n" >> $dest_dir/Makefile
+    printf "\t\t\$(RM) \$(NAME)\n\n" >> $dest_dir/Makefile
+    printf "re:\tfclean all\n\n" >> $dest_dir/Makefile
+    version=$(<$dest_dir/.version)
+    version_manager
+exit 0
